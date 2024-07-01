@@ -1,4 +1,7 @@
+// imports
 import React, { useRef, useState } from 'react';
+import { BrowserRouter as Router, Route, Routes, useNavigate } from 'react-router-dom';
+import CreateMessage from './CreateMessage';
 import './App.css';
 
 // firebase sdk
@@ -59,7 +62,7 @@ function SignIn() {
   }
 
   return (
-    <button onClick={SignInWithGoogle} className="btn btn-success">Sign In with Google</button>
+    <button onClick={SignInWithGoogle} className="btn btn-success mt-5">Sign In with Google</button>
   );
 }
 
@@ -78,110 +81,47 @@ function ChatRoom() {
 
   const [messages] = useCollectionData (query, {idField: 'id'});
 
+  // navigate
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    navigate('/create');
+  }
+
   return (
-    <div className='container-lg'>
-      {/*card container*/}
-      <div className='container mt-5'>
-        <div className='row'>
-          {messages && messages.map(msg => <ChatMessage key={msg.id} message={msg}/>)}
-          <span ref={dummy}></span>
+
+      <div className='container-lg'>
+
+        {/*cards container*/}
+        <div className='container mt-5'>
+          <div className='row'>
+            {messages && messages.map(msg => <ChatMessage key={msg.id} message={msg}/>)}
+            <span ref={dummy}></span>
+          </div>
         </div>
+
+        {/*click to go to create message page*/}
+        <button className='btn btn-primary' onClick={handleClick}>Create a message</button>
+
+        <Routes>
+          <Route path='/create' element={<CreateMessage />}/>
+        </Routes>
+
       </div>
-
-      {/*click to create a message*/}
-       <CreateMessage />
-    </div> 
   );
-}
-
-// create message component
-function CreateMessage() {
-
-  const messagesRef = firestore.collection('messages');
-  const query = messagesRef.orderBy('createdAt').limit(25);
-
-  const [messages] = useCollectionData (query, {idField: 'id'});
-
-  const [nameValue, setNameValue] = useState('');
-  const [paraValue, setParaValue] = useState('');
-
-  // form toggle
-  const [showForm, setShowForm] = useState(false);
-
-  const handleButtonClick = () => {
-    setShowForm(!showForm);
-  }
-
-  const sendMessage = async(e) => {
-    e.preventDefault();
-
-    const { uid, photoURL } = auth.currentUser;
-
-    if(!nameValue.trim() || !paraValue.trim()) {
-      alert('Both fields are required.');
-      return;
-    }
-
-    await messagesRef.add({
-      name: nameValue,
-      para: paraValue,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      uid,
-      photoURL
-    })
-
-    setNameValue('');
-    setParaValue('');
-  }
-
-  return (
-    <div className='container mt-5' align='center' style={{maxWidth: '450px'}}>
-      <button className='btn btn-primary mb-5' onClick={(handleButtonClick)}>
-        {showForm ? 'Cancel' : 'Click to Create a Message'}
-      </button>
-
-      {showForm && (
-        <div className='card p-1'>
-          <form onSubmit={sendMessage} className='p-3'>
-
-            {/* name header input */}
-            <div className='mb-3 p-2' align='left'>
-              <label className='form-label'>Name</label>
-              <input 
-                value={(nameValue)}
-                onChange={(e) => setNameValue(e.target.value)}
-                className='form-control'
-                placeholder='Name goes here'
-              ></input>
-              <div className='form-text'>Preferably just the first name</div>
-            </div>
-
-            {/* textarea code input */}
-            <div className='mb-3 p-2' align='left'>
-              <label className='form-label'>Message</label>
-              <textarea 
-                value={(paraValue)}
-                onChange={(e) => setParaValue(e.target.value)}
-                className='form-control'
-                placeholder='Message goes here'
-                maxLength={200}
-              ></textarea>
-            </div>
-
-            <button type='submit' className='btn btn-success px-3'>Send!</button>
-          </form>
-        </div>
-      )}
-
-    </div>
-  )
 }
 
 // chat message component
 function ChatMessage(props) {
   const { name, para, uid, photoURL } = props.message;
 
-  const isSent = uid === auth.currentUser.uid;
+  const user = auth.currentUser;
+    
+  if(!user) {
+    return;
+  }
+
+  const isSent = uid === user.uid;
 
   return (
     <div className='col-md-4 mb-4'>
