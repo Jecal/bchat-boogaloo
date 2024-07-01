@@ -78,45 +78,123 @@ function ChatRoom() {
 
   const [messages] = useCollectionData (query, {idField: 'id'});
 
-  const [formValue, setFormValue] = useState('');
+  return (
+    <div className='container-lg'>
+      {/*card container*/}
+      <div className='container mt-5'>
+        <div className='row'>
+          {messages && messages.map(msg => <ChatMessage key={msg.id} message={msg}/>)}
+          <span ref={dummy}></span>
+        </div>
+      </div>
+
+      {/*click to create a message*/}
+       <CreateMessage />
+    </div> 
+  );
+}
+
+// create message component
+function CreateMessage() {
+
+  const messagesRef = firestore.collection('messages');
+  const query = messagesRef.orderBy('createdAt').limit(25);
+
+  const [messages] = useCollectionData (query, {idField: 'id'});
+
+  const [nameValue, setNameValue] = useState('');
+  const [paraValue, setParaValue] = useState('');
+
+  // form toggle
+  const [showForm, setShowForm] = useState(false);
+
+  const handleButtonClick = () => {
+    setShowForm(!showForm);
+  }
 
   const sendMessage = async(e) => {
     e.preventDefault();
 
     const { uid, photoURL } = auth.currentUser;
 
+    if(!nameValue.trim() || !paraValue.trim()) {
+      alert('Both fields are required.');
+      return;
+    }
+
     await messagesRef.add({
-      text: formValue,
+      name: nameValue,
+      para: paraValue,
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       uid,
       photoURL
     })
 
-    setFormValue('');
-
-    dummy.current.scrollIntoView({ behavior: 'smooth' });
+    setNameValue('');
+    setParaValue('');
   }
 
   return (
-    <div className='container'>
+    <div className='container mt-5' align='center' style={{maxWidth: '450px'}}>
+      <button className='btn btn-primary mb-5' onClick={(handleButtonClick)}>
+        {showForm ? 'Cancel' : 'Click to Create a Message'}
+      </button>
 
-      <div className='card'>
-        <div className='card-body'></div>
-      </div>
+      {showForm && (
+        <div className='card p-1'>
+          <form onSubmit={sendMessage} className='p-3'>
 
-    </div> 
-  );
+            {/* name header input */}
+            <div className='mb-3 p-2' align='left'>
+              <label className='form-label'>Name</label>
+              <input 
+                value={(nameValue)}
+                onChange={(e) => setNameValue(e.target.value)}
+                className='form-control'
+                placeholder='Name goes here'
+              ></input>
+              <div className='form-text'>Preferably just the first name</div>
+            </div>
+
+            {/* textarea code input */}
+            <div className='mb-3 p-2' align='left'>
+              <label className='form-label'>Message</label>
+              <textarea 
+                value={(paraValue)}
+                onChange={(e) => setParaValue(e.target.value)}
+                className='form-control'
+                placeholder='Message goes here'
+                maxLength={200}
+              ></textarea>
+            </div>
+
+            <button type='submit' className='btn btn-success px-3'>Send!</button>
+          </form>
+        </div>
+      )}
+
+    </div>
+  )
 }
 
 // chat message component
 function ChatMessage(props) {
-  const { text, uid, photoURL } = props.message;
+  const { name, para, uid, photoURL } = props.message;
 
   const isSent = uid === auth.currentUser.uid;
-  const messageClass = isSent ? 'sent' : 'received';
 
   return (
-    <div></div>
+    <div className='col-md-4 mb-4'>
+      <div className='card'>
+        <div className='card-body'>
+          <img src={photoURL} className='rounded-circle py-3' style={{maxWidth: '50px'}} alt='profile'></img>
+          <div className='p-2'>
+            <h4 className='card-title'>{name}</h4>
+            <p className='card-text'>{para}</p>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
