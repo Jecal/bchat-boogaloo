@@ -1,7 +1,7 @@
 // imports
 import React, { useRef, useState } from 'react';
 import { BrowserRouter as Router, Route, Routes, useNavigate } from 'react-router-dom';
-import CreateMessage from './CreateMessage';
+import MessageForm from './MessageForm';
 import './App.css';
 
 // firebase sdk
@@ -32,13 +32,19 @@ function App() {
 
   const [user] = useAuthState(auth);
 
+  // page toggle
+  const [isToggled, setIsToggled] = useState(true);
+  const togglePage = () => {
+    setIsToggled(!isToggled);
+  }
+
   return (
     <div className="App">
 
       {/* navbar */}
       <nav className='navbar bg-body-tertiary'>
         <div className='container-lg'>
-          <span className='navbar-brand mb-0'><h3>bchat-v2</h3></span>
+          <span className='navbar-brand mb-0'><h3>bchat</h3></span>
           <SignOut />
         </div>
       </nav>
@@ -46,7 +52,22 @@ function App() {
       {/* [ternary] signed-in(boolean): if true show chatroom, if false show signin */}
       <div>
         <div className='container-lg align-items-center justify-content-center'>
-          {user ? <ChatRoom /> : <SignIn />}
+
+          {user ? (
+            isToggled ? (
+              <ChatRoom />
+            ) : (
+              <MessageForm setIsToggled={setIsToggled} />
+            )
+          ) : <SignIn />}
+
+        </div>
+        {/* button to toggle page */}
+        <div>
+          {user && (
+            <button onClick={togglePage} className={isToggled ? 'btn btn-primary floating-btn' : 'btn btn-danger floating-btn mt-5'}>
+              {isToggled ? 'Create a message!' : 'Cancel'}
+            </button>)}
         </div>
       </div>
 
@@ -62,7 +83,15 @@ function SignIn() {
   }
 
   return (
+    <div>
+    <div className='alert alert-dark mt-5' role='alert'>
+      <h4 className='alert-heading'>Notice</h4>
+      <hr></hr>
+      <p>yes, you can only sign in with google (atm)</p>
+    </div>
+
     <button onClick={SignInWithGoogle} className="btn btn-success mt-5">Sign In with Google</button>
+    </div>
   );
 }
 
@@ -81,31 +110,30 @@ function ChatRoom() {
 
   const [messages] = useCollectionData (query, {idField: 'id'});
 
-  // navigate
+  // navigate + message visibility toggle
   const navigate = useNavigate();
+  const [isVisible, setIsVisible] = useState(true);
 
   const handleClick = () => {
     navigate('/create');
+    setIsVisible(!isVisible);
   }
 
   return (
 
       <div className='container-lg'>
 
-        {/*cards container*/}
-        <div className='container mt-5'>
-          <div className='row'>
-            {messages && messages.map(msg => <ChatMessage key={msg.id} message={msg}/>)}
-            <span ref={dummy}></span>
+        <Prompt />
+        
+        <div className={isVisible ? 'visible' : 'hidden'}>
+          {/*cards container*/}
+          <div className='container mt-5'>
+            <div className='row'>
+              {messages && messages.map(msg => <ChatMessage key={msg.id} message={msg}/>)}
+              <span ref={dummy}></span>
+            </div>
           </div>
         </div>
-
-        {/*click to go to create message page*/}
-        <button className='btn btn-primary' onClick={handleClick}>Create a message</button>
-
-        <Routes>
-          <Route path='/create' element={<CreateMessage />}/>
-        </Routes>
 
       </div>
   );
@@ -121,10 +149,8 @@ function ChatMessage(props) {
     return;
   }
 
-  const isSent = uid === user.uid;
-
   return (
-    <div className='col-md-4 mb-4'>
+    <div className='col-md-4 mb-4 chat-msg'>
       <div className='card'>
         <div className='card-body'>
           <img src={photoURL} className='rounded-circle py-3' style={{maxWidth: '50px'}} alt='profile'></img>
@@ -136,6 +162,16 @@ function ChatMessage(props) {
       </div>
     </div>
   );
+}
+
+function Prompt() {
+  return (
+    <div className='alert alert-info mt-5' role='alert'>
+      <h4 className='alert-heading'>Week 0 Prompt</h4>
+      <hr></hr>
+      <p>paste ur favorite kaomoji here</p>
+    </div>
+  )
 }
 
 export default App;

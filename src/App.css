@@ -7,6 +7,26 @@
   pointer-events: none;
 }
 
+/* custom css start */
+
+.floating-btn {
+  position: fixed;
+  bottom: 5em;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+}
+
+.hidden {
+  display: none;
+}
+
+.visible {
+  display: block;
+}
+
+/* custom css end */
+
 @media (prefers-reduced-motion: no-preference) {
   .App-logo {
     animation: App-logo-spin infinite 20s linear;
