@@ -78,6 +78,8 @@ function MessageForm({ setIsToggled }) {
     
     return(
         <div className='container mt-5' align='center' style={{maxWidth: '450px'}}>
+
+            <Prompt />
             
             <div className='card p-1'>
                 {/* form */}
@@ -114,7 +116,7 @@ function MessageForm({ setIsToggled }) {
 
                     {/* submit button */}
                     <button type='submit' className='btn btn-success px-3'>
-                        Send
+                        Send!
                     </button>
 
                 </form>
@@ -124,5 +126,16 @@ function MessageForm({ setIsToggled }) {
         </div>
     )
 }
+
+function Prompt() {
+
+    return (
+      <div className='alert alert-info mt-5' role='alert'>
+        <h4 className='alert-heading'>Week 1 Prompt</h4>
+        <hr></hr>
+        <p>reccomend a game to play</p>
+      </div>
+    )
+  }
 
 export default MessageForm;

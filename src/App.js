@@ -165,11 +165,12 @@ function ChatMessage(props) {
 }
 
 function Prompt() {
+
   return (
     <div className='alert alert-info mt-5' role='alert'>
-      <h4 className='alert-heading'>Week 0 Prompt</h4>
+      <h4 className='alert-heading'>Week 1 Prompt</h4>
       <hr></hr>
-      <p>paste ur favorite kaomoji here</p>
+      <p>reccomend a game to play</p>
     </div>
   )
 }
