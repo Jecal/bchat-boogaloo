@@ -93,7 +93,7 @@ function MessageForm({ setIsToggled }) {
                             placeholder='Your name goes here'
                         ></input>
                         <div className='form-text'>
-                            Preferably just your first name
+                            Preferably just your first name (real or fake doesn't matter)
                         </div>
                     </div>
 
